@@ -15,16 +15,23 @@
     .brand svg { width: 34px; height: 38px; flex: none; }
     .brand-name { font-size: 21px; font-weight: 700; letter-spacing: -.7px; }
     .brand-tagline { margin-top: 3px; color: #888; font-size: 11px; font-weight: 400; letter-spacing: 0; }
-    .toolbar p { margin: 0; }
     .upload { display: inline-block; padding: 8px 11px; border: 1px solid #49424d; border-radius: 5px; background: #1b191e; color: #ddd; cursor: pointer; }
     .upload:hover, .upload:focus-within { border-color: #e76f00; }
     #java-file { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0,0,0,0); clip-path: inset(50%); }
     #status { min-height: 14px; margin: 0 0 10px; color: #aaa; font: 11px Arial, sans-serif; }
-    .stage { position: relative; min-height: 280px; display: grid; place-items: center; overflow: hidden; background: #151419; border: 1px solid #28252c; transition: border-color .15s, background .15s; }
-    .stage.dragging { border-color: var(--accent); background: #201523; }
+    .preview-shell { overflow: hidden; border: 1px solid #28252c; border-radius: 5px; background: #151419; }
+    .preview-tabs { display: flex; align-items: stretch; gap: 2px; min-height: 40px; padding: 0 8px; border-bottom: 1px solid #28252c; background: #121116; }
+    .tab-button { position: relative; padding: 0 12px; border: 0; border-radius: 0; background: transparent; color: #888; font: 12px Arial, sans-serif; cursor: pointer; }
+    .tab-button:hover { color: #ddd; }
+    .tab-button[aria-selected="true"] { color: #f2edf5; }
+    .tab-button[aria-selected="true"]::after { position: absolute; right: 8px; bottom: -1px; left: 8px; height: 2px; background: var(--accent); content: ""; }
+    .tab-file { max-width: 250px; overflow: hidden; color: #777; text-overflow: ellipsis; white-space: nowrap; }
+    .preview-pane[hidden] { display: none; }
+    .stage { position: relative; min-height: 280px; display: grid; place-items: center; overflow: hidden; background: #151419; transition: background .15s; }
+    .stage.dragging { background: #201523; outline: 1px dashed var(--accent); outline-offset: -8px; }
     .drop-hint { display: none; position: absolute; inset: 10px; z-index: 3; place-items: center; border: 1px dashed var(--accent); color: #fff; background: #111116dd; font-size: 13px; pointer-events: none; }
     .stage.dragging .drop-hint { display: grid; }
-    /* Clickgui.java: a 300 x 200 body, with its 10px title/drag strip above it. */
+    /* ClickGUI preview: approximates the uploaded Java UI; runtime data may not be in one file. */
     .gui { position: relative; flex: none; width: 300px; height: 200px; margin-top: 10px; background: #2d2d2d; user-select: none; font: 10px Arial, Helvetica, sans-serif; color: #aaa; }
     .dragbar { position: absolute; z-index: 1; left: 0; right: 0; top: -10px; height: 10px; background: #640a64; cursor: grab; }
     .dragbar:active { cursor: grabbing; }
@@ -44,12 +51,11 @@
     .slider-label { height: 10px; line-height: 10px; }
     .slider-track { height: 10px; background: #8a068a; cursor: ew-resize; }
     .slider-fill { height: 100%; background: var(--accent); pointer-events: none; }
-    .source-panel { margin-top: 14px; overflow: hidden; border: 1px solid #28252c; border-radius: 5px; background: #151419; }
-    .source-heading { display: flex; align-items: center; justify-content: space-between; gap: 12px; min-height: 40px; padding: 9px 12px; border-bottom: 1px solid #28252c; color: #ddd; font: 12px Arial, sans-serif; }
+    .source-heading { display: flex; align-items: center; justify-content: space-between; gap: 12px; min-height: 36px; padding: 8px 12px; border-bottom: 1px solid #28252c; color: #ddd; font: 12px Arial, sans-serif; }
     #file-info { overflow: hidden; color: #888; text-overflow: ellipsis; white-space: nowrap; }
-    #source-preview { min-height: 84px; max-height: 320px; margin: 0; padding: 14px; overflow: auto; color: #d3d0d7; background: #101014; white-space: pre; tab-size: 4; font: 12px/1.6 ui-monospace, SFMono-Regular, Consolas, monospace; }
+    #source-preview { min-height: 240px; max-height: 520px; margin: 0; padding: 14px; overflow: auto; color: #d3d0d7; background: #101014; white-space: pre; tab-size: 4; font: 12px/1.6 ui-monospace, SFMono-Regular, Consolas, monospace; }
     #source-preview.placeholder { color: #777; white-space: normal; font: 12px/1.5 Arial, sans-serif; }
-    @media (max-width: 420px) { .stage { min-height: 250px; } .gui { transform: scale(.88); } .toolbar { align-items: center; } .brand-tagline { display: none; } }
+    @media (max-width: 420px) { .stage { min-height: 250px; } .gui { transform: scale(.88); } .toolbar { align-items: center; } .brand-tagline { display: none; } .tab-file { max-width: 100px; } }
   </style>
 </head>
 <body>
@@ -68,23 +74,32 @@
       <label class="upload" for="java-file">Choose a .java file</label>
       <input id="java-file" type="file" accept=".java,text/x-java,text/plain">
     </div>
-    <p id="status" role="status" aria-live="polite">Drop a Java source file anywhere here or choose one to preview its contents.</p>
-    <section class="stage" id="stage" aria-label="ClickGUI preview">
-      <div class="drop-hint">Drop a .java file to preview it</div>
-      <div class="gui" id="gui">
-        <div class="dragbar" id="dragbar" title="Drag to move the menu"></div>
-        <nav class="category-list" id="categories" aria-label="Categories"></nav>
-        <section class="module-list" id="modules" aria-label="Modules"></section>
-        <section class="settings" id="settings" aria-label="Module settings"></section>
+    <p id="status" role="status" aria-live="polite">Drop a Java source file here or choose one. The GUI Preview tab shows the visual preview.</p>
+    <section class="preview-shell" aria-label="Java preview">
+      <div class="preview-tabs" role="tablist" aria-label="Preview views">
+        <button class="tab-button" id="gui-tab" type="button" role="tab" aria-selected="true" aria-controls="gui-pane">GUI Preview</button>
+        <button class="tab-button" id="source-tab" type="button" role="tab" aria-selected="false" aria-controls="source-pane">Source</button>
+        <span class="tab-file" id="tab-file" aria-live="polite">Example preview</span>
       </div>
-    </section>
-    <section class="source-panel" aria-label="Selected Java source preview">
-      <div class="source-heading"><strong>Java file preview</strong><span id="file-info">No file selected</span></div>
-      <pre id="source-preview" class="placeholder">The selected file's source code will appear here. Files are read locally in your browser and are never uploaded or executed.</pre>
+      <section class="preview-pane" id="gui-pane" role="tabpanel" aria-labelledby="gui-tab">
+        <section class="stage" id="stage" aria-label="ClickGUI visual preview">
+          <div class="drop-hint">Drop a .java file to preview its GUI</div>
+          <div class="gui" id="gui">
+            <div class="dragbar" id="dragbar" title="Drag to move the menu"></div>
+            <nav class="category-list" id="categories" aria-label="Categories"></nav>
+            <section class="module-list" id="modules" aria-label="Modules"></section>
+            <section class="settings" id="settings" aria-label="Module settings"></section>
+          </div>
+        </section>
+      </section>
+      <section class="preview-pane" id="source-pane" role="tabpanel" aria-labelledby="source-tab" hidden>
+        <div class="source-heading"><strong>Java source</strong><span id="file-info">No file selected</span></div>
+        <pre id="source-preview" class="placeholder">The selected file's source code will appear here. Files are read locally in your browser and are never uploaded or executed.</pre>
+      </section>
     </section>
   </main>
   <script>
-    // These are illustrative only: Clickgui.java obtains both lists from other runtime classes.
+    // These are illustrative only: Clickgui.java obtains categories/modules from runtime classes.
     const exampleCategories = {
       Combat: ['KillAura', 'Velocity', 'AutoClicker', 'Reach', 'Criticals', 'AntiBot'],
       Movement: ['Speed', 'Fly', 'Sprint', 'Step', 'LongJump', 'NoSlow'],
@@ -104,7 +119,34 @@
     const dropArea = document.getElementById('drop-area');
     const sourcePreview = document.getElementById('source-preview');
     const fileInfo = document.getElementById('file-info');
+    const tabFile = document.getElementById('tab-file');
+    const guiTab = document.getElementById('gui-tab');
+    const sourceTab = document.getElementById('source-tab');
+    const guiPane = document.getElementById('gui-pane');
+    const sourcePane = document.getElementById('source-pane');
     let drag = null;
+
+    function selectTab(tab) {
+      const showGui = tab === 'gui';
+      guiTab.setAttribute('aria-selected', String(showGui));
+      sourceTab.setAttribute('aria-selected', String(!showGui));
+      guiTab.tabIndex = showGui ? 0 : -1;
+      sourceTab.tabIndex = showGui ? -1 : 0;
+      guiPane.hidden = !showGui;
+      sourcePane.hidden = showGui;
+    }
+    guiTab.addEventListener('click', () => selectTab('gui'));
+    sourceTab.addEventListener('click', () => selectTab('source'));
+    for (const [button, tab] of [[guiTab, 'gui'], [sourceTab, 'source']]) {
+      button.addEventListener('keydown', event => {
+        if (event.key === 'ArrowLeft' || event.key === 'ArrowRight') {
+          event.preventDefault();
+          const next = tab === 'gui' ? sourceTab : guiTab;
+          selectTab(tab === 'gui' ? 'source' : 'gui');
+          next.focus();
+        }
+      });
+    }
 
     function render() {
       categories.replaceChildren();
@@ -162,10 +204,11 @@
       reader.onerror = () => { status.textContent = 'Could not read that file.'; fileInfo.textContent = 'Could not read file'; };
       reader.onload = () => {
         const source = String(reader.result || '');
-        // Render uploaded source as text: it is never interpreted as HTML or executed.
         sourcePreview.textContent = source || '(This file is empty.)';
         sourcePreview.classList.remove('placeholder');
         fileInfo.textContent = `${file.name} · ${file.size.toLocaleString()} bytes`;
+        tabFile.textContent = file.name;
+        tabFile.title = file.name;
         const enumMatch = source.match(/enum\s+Category\s*\{([\s\S]*?)\}/);
         if (enumMatch) {
           const names = enumMatch[1].split(/[;,]/)[0].split(',').map(part => part.trim().replace(/\s*=.*$/, '')).filter(name => /^[A-Za-z_$][\w$]*$/.test(name));
@@ -181,7 +224,8 @@
         const selected = colors.find(color => color.every(value => value <= 255) && color[0] > 150 && color[2] > 100);
         if (selected) document.documentElement.style.setProperty('--accent', `rgb(${selected.join(',')})`);
         render();
-        status.textContent = `Previewing ${file.name}. Source is displayed below; the GUI preview is illustrative and cannot recover runtime data from one Java file.`;
+        selectTab('gui');
+        status.textContent = `Showing the GUI preview for ${file.name}. This is an approximation; Java GUI code and runtime data cannot be executed or fully reconstructed in the browser.`;
       };
       reader.readAsText(file);
     }
