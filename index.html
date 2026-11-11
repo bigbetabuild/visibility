@@ -3,17 +3,21 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <meta name="theme-color" content="#2d2d2d">
-  <title>Visibility — ClickGUI preview</title>
+  <meta name="theme-color" content="#111116">
+  <title>viewjava — Java file preview</title>
   <style>
     :root { color-scheme: dark; font-family: Arial, Helvetica, sans-serif; background: #111116; color: #aaa; --accent: #e60ae6; }
     * { box-sizing: border-box; }
     body { min-width: 320px; min-height: 100vh; margin: 0; display: grid; place-items: center; background: #111116; }
     main { width: min(100% - 24px, 760px); padding: 18px 0; }
     .toolbar { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-bottom: 14px; color: #aaa; font: 12px Arial, sans-serif; }
+    .brand { display: flex; align-items: center; gap: 10px; color: #f3f1f5; }
+    .brand svg { width: 34px; height: 38px; flex: none; }
+    .brand-name { font-size: 21px; font-weight: 700; letter-spacing: -.7px; }
+    .brand-tagline { margin-top: 3px; color: #888; font-size: 11px; font-weight: 400; letter-spacing: 0; }
     .toolbar p { margin: 0; }
-    .upload { display: inline-block; padding: 7px 10px; border: 1px solid #49424d; border-radius: 4px; background: #1b191e; color: #ddd; cursor: pointer; }
-    .upload:hover, .upload:focus-within { border-color: #640a64; }
+    .upload { display: inline-block; padding: 8px 11px; border: 1px solid #49424d; border-radius: 5px; background: #1b191e; color: #ddd; cursor: pointer; }
+    .upload:hover, .upload:focus-within { border-color: #e76f00; }
     #java-file { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0,0,0,0); clip-path: inset(50%); }
     #status { min-height: 14px; margin: 0 0 10px; color: #aaa; font: 11px Arial, sans-serif; }
     .stage { position: relative; min-height: 280px; display: grid; place-items: center; overflow: hidden; background: #151419; border: 1px solid #28252c; transition: border-color .15s, background .15s; }
@@ -40,23 +44,31 @@
     .slider-label { height: 10px; line-height: 10px; }
     .slider-track { height: 10px; background: #8a068a; cursor: ew-resize; }
     .slider-fill { height: 100%; background: var(--accent); pointer-events: none; }
-    .empty-note { position: absolute; left: 205px; top: 3px; width: 90px; color: #aaa; font-size: 9px; }
-    .source-panel { margin-top: 14px; overflow: hidden; border: 1px solid #28252c; background: #151419; }
-    .source-heading { display: flex; align-items: center; justify-content: space-between; gap: 12px; min-height: 36px; padding: 8px 10px; border-bottom: 1px solid #28252c; color: #ddd; font: 12px Arial, sans-serif; }
+    .source-panel { margin-top: 14px; overflow: hidden; border: 1px solid #28252c; border-radius: 5px; background: #151419; }
+    .source-heading { display: flex; align-items: center; justify-content: space-between; gap: 12px; min-height: 40px; padding: 9px 12px; border-bottom: 1px solid #28252c; color: #ddd; font: 12px Arial, sans-serif; }
     #file-info { overflow: hidden; color: #888; text-overflow: ellipsis; white-space: nowrap; }
-    #source-preview { min-height: 84px; max-height: 280px; margin: 0; padding: 12px; overflow: auto; color: #c8c8c8; white-space: pre; font: 12px/1.5 ui-monospace, SFMono-Regular, Consolas, monospace; }
+    #source-preview { min-height: 84px; max-height: 320px; margin: 0; padding: 14px; overflow: auto; color: #d3d0d7; background: #101014; white-space: pre; tab-size: 4; font: 12px/1.6 ui-monospace, SFMono-Regular, Consolas, monospace; }
     #source-preview.placeholder { color: #777; white-space: normal; font: 12px/1.5 Arial, sans-serif; }
-    @media (max-width: 420px) { .stage { min-height: 250px; } .gui { transform: scale(.88); } .toolbar { align-items: flex-start; } }
+    @media (max-width: 420px) { .stage { min-height: 250px; } .gui { transform: scale(.88); } .toolbar { align-items: center; } .brand-tagline { display: none; } }
   </style>
 </head>
 <body>
   <main id="drop-area">
     <div class="toolbar">
-      <p>ClickGUI · browser preview</p>
-      <label class="upload" for="java-file">Drop Java file or choose…</label>
+      <div class="brand" aria-label="viewjava">
+        <svg viewBox="0 0 48 54" role="img" aria-labelledby="java-logo-title">
+          <title id="java-logo-title">Java-style steaming cup logo</title>
+          <path d="M26 3c-7 6 8 7 0 13M34 1c-7 7 7 8 0 14" fill="none" stroke="#e76f00" stroke-width="2.6" stroke-linecap="round"/>
+          <path d="M10 22h25l-2.6 16.3a5 5 0 0 1-5 4.2H17a5 5 0 0 1-5-4.2L10 22Z" fill="#5382a1"/>
+          <path d="M35 25h3.2a4.8 4.8 0 0 1 0 9.6h-5" fill="none" stroke="#5382a1" stroke-width="3.2" stroke-linecap="round"/>
+          <path d="M8 46c8 3.2 24 3.2 32 0M12 50c7 2.1 18 2.1 24 0" fill="none" stroke="#e76f00" stroke-width="2.4" stroke-linecap="round"/>
+        </svg>
+        <div><div class="brand-name">viewjava</div><div class="brand-tagline">Java source &amp; GUI preview</div></div>
+      </div>
+      <label class="upload" for="java-file">Choose a .java file</label>
       <input id="java-file" type="file" accept=".java,text/x-java,text/plain">
     </div>
-    <p id="status" role="status" aria-live="polite">The GUI below is an example. Choose or drop a .java file to view its source here.</p>
+    <p id="status" role="status" aria-live="polite">Drop a Java source file anywhere here or choose one to preview its contents.</p>
     <section class="stage" id="stage" aria-label="ClickGUI preview">
       <div class="drop-hint">Drop a .java file to preview it</div>
       <div class="gui" id="gui">
@@ -66,9 +78,9 @@
         <section class="settings" id="settings" aria-label="Module settings"></section>
       </div>
     </section>
-    <section class="source-panel" aria-label="Selected Java source">
-      <div class="source-heading"><strong>Selected file source</strong><span id="file-info">No file selected</span></div>
-      <pre id="source-preview" class="placeholder">The contents of the Java file you choose or drop will appear here. The file is read locally in your browser and is never executed.</pre>
+    <section class="source-panel" aria-label="Selected Java source preview">
+      <div class="source-heading"><strong>Java file preview</strong><span id="file-info">No file selected</span></div>
+      <pre id="source-preview" class="placeholder">The selected file's source code will appear here. Files are read locally in your browser and are never uploaded or executed.</pre>
     </section>
   </main>
   <script>
@@ -137,7 +149,7 @@
       const status = document.getElementById('status');
       if (!file) return;
       if (!file.name.toLowerCase().endsWith('.java')) {
-        status.textContent = 'Choose a .java source file.';
+        status.textContent = 'Please choose a .java source file.';
         fileInfo.textContent = 'Unsupported file type';
         return;
       }
@@ -150,7 +162,7 @@
       reader.onerror = () => { status.textContent = 'Could not read that file.'; fileInfo.textContent = 'Could not read file'; };
       reader.onload = () => {
         const source = String(reader.result || '');
-        // Display source as text so uploaded code is never interpreted as HTML or executed.
+        // Render uploaded source as text: it is never interpreted as HTML or executed.
         sourcePreview.textContent = source || '(This file is empty.)';
         sourcePreview.classList.remove('placeholder');
         fileInfo.textContent = `${file.name} · ${file.size.toLocaleString()} bytes`;
@@ -169,7 +181,7 @@
         const selected = colors.find(color => color.every(value => value <= 255) && color[0] > 150 && color[2] > 100);
         if (selected) document.documentElement.style.setProperty('--accent', `rgb(${selected.join(',')})`);
         render();
-        status.textContent = `Showing ${file.name} below. The GUI is illustrative; runtime module and setting data cannot be recovered from a single Java source file.`;
+        status.textContent = `Previewing ${file.name}. Source is displayed below; the GUI preview is illustrative and cannot recover runtime data from one Java file.`;
       };
       reader.readAsText(file);
     }
