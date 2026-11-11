@@ -6,140 +6,50 @@
   <meta name="theme-color" content="#2d2d2d">
   <title>Visibility — ClickGUI preview</title>
   <style>
-    :root {
-      color-scheme: dark;
-      font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
-      background: #111116;
-      color: #eee;
-      --accent: #e60ae6;
-      --gui-bg: #2d2d2d;
-    }
+    :root { color-scheme: dark; font-family: Arial, Helvetica, sans-serif; background: #111116; color: #aaa; }
     * { box-sizing: border-box; }
-    body {
-      min-width: 320px;
-      min-height: 100vh;
-      margin: 0;
-      display: grid;
-      place-items: center;
-      overflow: auto;
-      background:
-        radial-gradient(ellipse at 50% 44%, rgba(111, 32, 111, .14), transparent 46%),
-        linear-gradient(rgba(255,255,255,.025) 1px, transparent 1px),
-        linear-gradient(90deg, rgba(255,255,255,.025) 1px, transparent 1px), #111116;
-      background-size: auto, 24px 24px, 24px 24px, auto;
-    }
-    .preview {
-      width: min(100% - 32px, 620px);
-      padding: 28px;
-      border: 1px solid #29252d;
-      border-radius: 12px;
-      background: rgba(22, 21, 26, .94);
-      box-shadow: 0 24px 80px #0008;
-    }
-    .intro { margin: 0 0 22px; }
-    .eyebrow { margin: 0 0 7px; color: var(--accent); font-size: 11px; font-weight: 750; letter-spacing: .16em; text-transform: uppercase; }
-    h1 { margin: 0; font-size: 23px; letter-spacing: -.035em; }
-    .intro p:last-child { margin: 7px 0 0; color: #98939d; font-size: 13px; }
-    .drop-zone {
-      margin: 0 0 16px;
-      padding: 16px;
-      border: 1px dashed #514657;
-      border-radius: 8px;
-      background: #19171d;
-      text-align: center;
-      transition: border-color .15s, background .15s;
-    }
-    .drop-zone.is-over { border-color: var(--accent); background: #231b25; }
-    .drop-zone p { margin: 0 0 10px; color: #c6bfca; font-size: 13px; }
-    .drop-zone small { display: block; margin-top: 9px; color: #8e8993; font-size: 11px; }
-    .file-button {
-      display: inline-block;
-      padding: 8px 12px;
-      border: 1px solid #5b3e5b;
-      border-radius: 6px;
-      background: #2b202d;
-      color: #f3eaf3;
-      font: inherit;
-      font-size: 12px;
-      cursor: pointer;
-    }
-    .file-button:hover { border-color: var(--accent); }
-    #java-file { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0,0,0,0); white-space: nowrap; clip-path: inset(50%); }
-    .status { min-height: 16px; margin: 9px 0 0; color: #bcb2c0; font-size: 11px; overflow-wrap: anywhere; }
-    .stage {
-      min-height: 280px;
-      display: grid;
-      place-items: center;
-      overflow: hidden;
-      border: 1px solid #302c35;
-      border-radius: 8px;
-      background: radial-gradient(ellipse, #26212a 0, #19171c 70%);
-    }
-    .gui {
-      position: relative;
-      width: 300px;
-      height: 200px;
-      flex: none;
-      background: var(--gui-bg);
-      box-shadow: 0 12px 40px #0009;
-      user-select: none;
-      font-family: Arial, Helvetica, sans-serif;
-      font-size: 10px;
-      color: #aaa;
-      transform-origin: center;
-    }
-    .dragbar { position: absolute; inset: -10px 0 auto; height: 10px; background: var(--accent); cursor: grab; }
+    body { min-width: 320px; min-height: 100vh; margin: 0; display: grid; place-items: center; background: #111116; }
+    main { width: min(100% - 24px, 760px); }
+    .toolbar { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-bottom: 14px; color: #aaa; font: 12px Arial, sans-serif; }
+    .toolbar p { margin: 0; }
+    .upload { display: inline-block; padding: 7px 10px; border: 1px solid #49424d; border-radius: 4px; background: #1b191e; color: #ddd; cursor: pointer; }
+    .upload:hover { border-color: #640a64; }
+    #java-file { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0,0,0,0); clip-path: inset(50%); }
+    #status { min-height: 14px; margin: 0 0 10px; color: #888; font: 11px Arial, sans-serif; }
+    .stage { min-height: 280px; display: grid; place-items: center; overflow: hidden; background: #151419; border: 1px solid #28252c; }
+    /* Clickgui.java: a 300 x 200 body, with its 10px title/drag strip above it. */
+    .gui { position: relative; flex: none; width: 300px; height: 200px; margin-top: 10px; background: #2d2d2d; user-select: none; font: 10px Arial, Helvetica, sans-serif; color: #aaa; }
+    .dragbar { position: absolute; z-index: 1; left: 0; right: 0; top: -10px; height: 10px; background: #640a64; cursor: grab; }
     .dragbar:active { cursor: grabbing; }
-    .category-list, .module-list { position: absolute; top: 1px; display: grid; grid-auto-rows: 15px; gap: 0; }
+    .category-list, .module-list { position: absolute; top: 1px; display: grid; grid-auto-rows: 15px; gap: 0; margin: 0; padding: 0; }
     .category-list { left: 0; width: 60px; }
     .module-list { left: 65px; width: 60px; }
-    .item {
-      display: block; width: 100%; height: 14px; padding: 0 2px; overflow: hidden;
-      border: 0; border-radius: 0; background: #1c1c1c; color: #aaa;
-      text-align: left; white-space: nowrap; font: inherit; line-height: 14px; cursor: pointer;
-    }
-    .item:hover { color: #fff; background: #383038; }
-    .item.selected, .item.enabled { background: var(--accent); color: #eee; }
-    .item.enabled:hover, .item.selected:hover { filter: brightness(1.12); }
-    .settings { position: absolute; top: 3px; left: 205px; width: 90px; display: grid; gap: 2px; }
-    .setting-check, .setting-combo {
-      min-height: 10px; border: 0; padding: 0 2px; background: #1e1e1e; color: #c8c8c8;
-      text-align: left; font: inherit; font-size: 9px; cursor: pointer;
-    }
-    .setting-check { display: flex; align-items: center; gap: 5px; background: transparent; }
+    .item { display: block; width: 100%; height: 14px; margin: 0; padding: 0 2px; overflow: hidden; border: 0; border-radius: 0; background: #1c1c1c; color: #aaa; text-align: left; white-space: nowrap; font: 10px/14px Arial, Helvetica, sans-serif; cursor: pointer; }
+    .item:hover { color: #fff; }
+    .item.selected, .item.enabled { background: #e60ae6; color: #aaa; }
+    .settings { position: absolute; top: 0; left: 205px; width: 90px; margin: 0; padding: 0; }
+    .setting-check, .setting-combo { min-height: 10px; border: 0; padding: 0; background: #1e1e1e; color: #c8c8c8; text-align: left; font: 9px Arial, sans-serif; cursor: pointer; }
+    .setting-check { position: absolute; left: 0; top: 3px; display: flex; align-items: center; gap: 5px; background: transparent; }
     .checkmark { width: 10px; height: 10px; flex: none; background: #1e1e1e; }
-    .setting-check[aria-checked="true"] .checkmark { background: var(--accent); }
-    .setting-combo { height: 10px; overflow: hidden; white-space: nowrap; }
-    .setting-combo:hover { background: #333; }
-    .slider-setting { min-height: 25px; color: #eee; }
+    .setting-check[aria-checked="true"] .checkmark { background: #e60ae6; }
+    .setting-combo { position: absolute; left: 0; top: 3px; width: 70px; height: 10px; overflow: hidden; white-space: nowrap; }
+    .slider-setting { position: absolute; left: 0; top: 3px; width: 90px; height: 25px; color: #eee; }
     .slider-label { height: 10px; line-height: 10px; }
-    .slider-track { height: 10px; background: color-mix(in srgb, var(--accent) 55%, #160016); cursor: ew-resize; }
-    .slider-fill { height: 100%; background: var(--accent); pointer-events: none; }
-    .hint { display: flex; justify-content: center; gap: 17px; flex-wrap: wrap; padding: 13px 4px 0; color: #8e8993; font-size: 11px; }
-    kbd { padding: 2px 5px; border: 1px solid #403a44; border-radius: 4px; background: #211f25; color: #d3ced8; font: inherit; }
-    .footer { margin: 16px 0 0; color: #77727c; font-size: 11px; text-align: center; }
-    @media (max-width: 420px) {
-      .preview { width: calc(100% - 20px); padding: 18px 10px; }
-      .stage { min-height: 250px; }
-      .gui { transform: scale(.88); }
-    }
+    .slider-track { height: 10px; background: #8a068a; cursor: ew-resize; }
+    .slider-fill { height: 100%; background: #e60ae6; pointer-events: none; }
+    .empty-note { position: absolute; left: 205px; top: 3px; width: 90px; color: #aaa; font-size: 9px; }
+    @media (max-width: 420px) { .stage { min-height: 250px; } .gui { transform: scale(.88); } }
   </style>
 </head>
 <body>
-  <main class="preview">
-    <header class="intro">
-      <p class="eyebrow">Visibility · browser demo</p>
-      <h1>ClickGUI preview</h1>
-      <p>An interactive recreation of the flat purple-and-charcoal menu. Drop a Java source file to inspect and preview its detectable GUI details.</p>
-    </header>
-    <section class="drop-zone" id="drop-zone" aria-label="Java source upload area">
-      <p>Drop a ClickGUI <code>.java</code> file here</p>
-      <label class="file-button" for="java-file">Choose Java file</label>
-      <input id="java-file" type="file" accept=".java,text/x-java, text/plain">
-      <small>Your file stays in this browser. Java is read as text; it is never run or compiled.</small>
-      <p class="status" id="status" role="status" aria-live="polite">Showing the built-in example.</p>
-    </section>
-    <section class="stage" aria-label="Interactive ClickGUI preview">
+  <main>
+    <div class="toolbar">
+      <p>ClickGUI · browser preview</p>
+      <label class="upload" for="java-file">Drop Java file or choose…</label>
+      <input id="java-file" type="file" accept=".java,text/x-java,text/plain">
+    </div>
+    <p id="status" role="status" aria-live="polite">Preview uses the GUI dimensions, coordinates, and colors from Clickgui.java. Category/module lists are examples because their source data is not in this repository.</p>
+    <section class="stage" id="stage" aria-label="ClickGUI preview">
       <div class="gui" id="gui">
         <div class="dragbar" id="dragbar" title="Drag to move the menu"></div>
         <nav class="category-list" id="categories" aria-label="Categories"></nav>
@@ -147,12 +57,10 @@
         <section class="settings" id="settings" aria-label="Module settings"></section>
       </div>
     </section>
-    <div class="hint"><span><kbd>Click</kbd> toggle module</span><span><kbd>Right-click</kbd> settings</span><span><kbd>Drag</kbd> purple bar</span></div>
-    <p class="footer">Standalone preview · Java source is parsed locally; no Minecraft or build tools required</p>
   </main>
   <script>
-    // Representative demo data; the Java GUI populates these lists at runtime from its module manager.
-    const modulesByCategory = {
+    // These are illustrative only: Clickgui.java obtains both lists from other runtime classes.
+    const exampleCategories = {
       Combat: ['KillAura', 'Velocity', 'AutoClicker', 'Reach', 'Criticals', 'AntiBot'],
       Movement: ['Speed', 'Fly', 'Sprint', 'Step', 'LongJump', 'NoSlow'],
       Player: ['FastPlace', 'NoFall', 'SafeWalk', 'InventoryMove'],
@@ -160,190 +68,112 @@
       World: ['Scaffold', 'ChestStealer', 'FastMine'],
       Misc: ['HackerDetector', 'Disabler', 'Notifications']
     };
-    const defaultModules = JSON.parse(JSON.stringify(modulesByCategory));
+    let categoryData = structuredClone(exampleCategories);
+    let selectedCategory = 'Combat';
+    const enabled = new Set(['KillAura', 'Sprint']);
     const categories = document.getElementById('categories');
     const modules = document.getElementById('modules');
     const settings = document.getElementById('settings');
-    let selectedCategory = 'Combat';
-    let openModule = 'KillAura';
-    const enabled = new Set(['KillAura', 'Sprint']);
-    const values = { 'Auto Block': true, 'Mode': 'Single', 'Range': 3.2, 'APS': 12 };
-    const options = ['Single', 'Switch', 'Multi'];
+    const gui = document.getElementById('gui');
+    const stage = document.getElementById('stage');
+    let drag = null;
 
-    function renderCategories() {
+    function render() {
       categories.replaceChildren();
-      Object.keys(modulesByCategory).forEach(name => {
+      Object.keys(categoryData).forEach(name => {
         const button = document.createElement('button');
         button.className = `item${name === selectedCategory ? ' selected' : ''}`;
         button.textContent = name;
-        button.setAttribute('aria-pressed', String(name === selectedCategory));
         button.addEventListener('click', () => { selectedCategory = name; render(); });
         categories.append(button);
       });
-    }
-    function renderModules() {
       modules.replaceChildren();
-      (modulesByCategory[selectedCategory] || []).forEach(name => {
+      (categoryData[selectedCategory] || []).forEach(name => {
         const button = document.createElement('button');
         button.className = `item${enabled.has(name) ? ' enabled' : ''}`;
         button.textContent = name;
-        button.title = `${name} — click to toggle, right-click for settings`;
-        button.addEventListener('click', () => {
-          enabled.has(name) ? enabled.delete(name) : enabled.add(name);
-          renderModules();
-        });
-        button.addEventListener('contextmenu', event => {
-          event.preventDefault();
-          openModule = name;
-          renderSettings();
-        });
+        button.title = 'Left-click to toggle; right-click to show example settings';
+        button.addEventListener('click', () => { enabled.has(name) ? enabled.delete(name) : enabled.add(name); render(); });
+        button.addEventListener('contextmenu', event => { event.preventDefault(); showExampleSettings(); });
         modules.append(button);
       });
     }
-    function renderSettings() {
+    function showExampleSettings() {
       settings.replaceChildren();
-      if (!openModule) return;
       const checkbox = document.createElement('button');
       checkbox.className = 'setting-check';
       checkbox.setAttribute('role', 'checkbox');
-      checkbox.setAttribute('aria-checked', String(values['Auto Block']));
-      checkbox.innerHTML = '<span class="checkmark"></span><span>Auto Block</span>';
-      checkbox.addEventListener('click', () => { values['Auto Block'] = !values['Auto Block']; renderSettings(); });
-      settings.append(checkbox);
-
+      checkbox.setAttribute('aria-checked', 'true');
+      checkbox.innerHTML = '<span class="checkmark"></span><span>Example</span>';
+      checkbox.addEventListener('click', () => checkbox.setAttribute('aria-checked', checkbox.getAttribute('aria-checked') !== 'true'));
       const combo = document.createElement('button');
       combo.className = 'setting-combo';
-      combo.textContent = `Mode: ${values.Mode}  ›`;
-      combo.title = 'Click to cycle options';
-      combo.addEventListener('click', () => {
-        values.Mode = options[(options.indexOf(values.Mode) + 1) % options.length];
-        renderSettings();
-      });
-      settings.append(combo);
-
-      [['Range', 1, 6, 0.1], ['APS', 1, 20, 1]].forEach(([name, min, max, step]) => {
-        const wrap = document.createElement('div');
-        wrap.className = 'slider-setting';
-        const label = document.createElement('div');
-        label.className = 'slider-label';
-        label.textContent = `${name}: ${Number(values[name]).toFixed(name === 'Range' ? 1 : 0)}`;
-        const track = document.createElement('div');
-        track.className = 'slider-track';
-        track.setAttribute('role', 'slider');
-        track.setAttribute('aria-label', name);
-        track.setAttribute('aria-valuemin', min);
-        track.setAttribute('aria-valuemax', max);
-        track.setAttribute('aria-valuenow', values[name]);
-        const fill = document.createElement('div');
-        fill.className = 'slider-fill';
-        fill.style.width = `${((values[name] - min) / (max - min)) * 100}%`;
-        track.append(fill);
-        const update = event => {
-          const rect = track.getBoundingClientRect();
-          const ratio = Math.max(0, Math.min(1, (event.clientX - rect.left) / rect.width));
-          values[name] = Math.round((min + ratio * (max - min)) / step) * step;
-          renderSettings();
-        };
-        track.addEventListener('pointerdown', event => { track.setPointerCapture(event.pointerId); update(event); });
-        track.addEventListener('pointermove', event => { if (track.hasPointerCapture(event.pointerId)) update(event); });
-        wrap.append(label, track);
-        settings.append(wrap);
-      });
+      combo.textContent = 'Mode: Single';
+      combo.addEventListener('click', () => { combo.textContent = combo.textContent.endsWith('Single') ? 'Mode: Switch' : 'Mode: Single'; });
+      settings.append(checkbox, combo);
+      const slider = document.createElement('div');
+      slider.className = 'slider-setting';
+      slider.innerHTML = '<div class="slider-label">Range: 3.2</div><div class="slider-track"><div class="slider-fill" style="width:44%"></div></div>';
+      settings.append(slider);
     }
-    function render() { renderCategories(); renderModules(); renderSettings(); }
-    render();
 
-    // This is a safe, best-effort source inspection, not a Java compiler. A standalone Clickgui.java
-    // usually refers to categories/modules declared in other files, so those runtime lists remain demo data.
-    function previewJava(file) {
+    // Java source is treated as plain text, never executed. Clickgui.java alone cannot provide
+    // module/settings runtime data; if a Category enum is pasted into it, those names are usable.
+    function loadJava(file) {
       const status = document.getElementById('status');
-      if (!file || !file.name.toLowerCase().endsWith('.java')) {
-        status.textContent = 'Please choose a .java source file.';
-        return;
-      }
-      if (file.size > 1024 * 1024) {
-        status.textContent = 'That file is over the 1 MB preview limit.';
-        return;
-      }
+      if (!file || !file.name.toLowerCase().endsWith('.java')) { status.textContent = 'Choose a .java source file.'; return; }
+      if (file.size > 1024 * 1024) { status.textContent = 'File exceeds the 1 MB preview limit.'; return; }
       const reader = new FileReader();
-      reader.onerror = () => { status.textContent = 'Could not read that file. Please try another Java source file.'; };
+      reader.onerror = () => { status.textContent = 'Could not read that file.'; };
       reader.onload = () => {
         const source = String(reader.result || '');
-        const gui = document.getElementById('gui');
-        const notes = [];
-
-        // Read RGB constants and use the most colorful one as the GUI highlight.
-        const rgb = [...source.matchAll(/new\s+Color\s*\(\s*(\d{1,3})\s*,\s*(\d{1,3})\s*,\s*(\d{1,3})\s*\)/g)]
-          .map(match => match.slice(1, 4).map(Number))
-          .filter(color => color.every(channel => channel >= 0 && channel <= 255));
-        if (rgb.length) {
-          const accent = rgb.sort((a, b) => saturation(b) - saturation(a))[0];
-          document.documentElement.style.setProperty('--accent', `rgb(${accent.join(',')})`);
-          notes.push('color detected');
-        }
-        // Handle common ClickGUI dimensions such as width = posX + 150 * 2 and height = posY + 200.
-        const widthMatch = source.match(/(?:width\s*=\s*(?:\w+\s*\+\s*)?)(\d+(?:\.\d+)?)\s*\*\s*2/);
-        const heightMatch = source.match(/height\s*=\s*(?:\w+\s*\+\s*)?(\d+(?:\.\d+)?)/);
-        if (widthMatch) { gui.style.width = `${Math.max(180, Math.min(600, Number(widthMatch[1]) * 2))}px`; notes.push('width detected'); }
-        if (heightMatch) { gui.style.height = `${Math.max(120, Math.min(500, Number(heightMatch[1])))}px`; notes.push('height detected'); }
-
-        // If a Java enum is included in this file, use its constants as category labels.
         const enumMatch = source.match(/enum\s+Category\s*\{([\s\S]*?)\}/);
-        const names = enumMatch ? enumMatch[1].split(/[;,]/)[0].split(',').map(value => value.trim().replace(/\s*=.*$/, '')).filter(value => /^[A-Za-z_$][\w$]*$/.test(value)) : [];
-        if (names.length) {
-          const updated = {};
-          names.forEach(name => { updated[name] = defaultModules[name] || ['ExampleModule']; });
-          Object.keys(modulesByCategory).forEach(key => delete modulesByCategory[key]);
-          Object.assign(modulesByCategory, updated);
-          selectedCategory = names.includes('Combat') ? 'Combat' : names[0];
-          notes.push(`${names.length} categories detected`);
+        if (enumMatch) {
+          const names = enumMatch[1].split(/[;,]/)[0].split(',').map(part => part.trim().replace(/\s*=.*$/, '')).filter(name => /^[A-Za-z_$][\w$]*$/.test(name));
+          if (names.length) {
+            categoryData = Object.fromEntries(names.map(name => [name, exampleCategories[name] || ['ExampleModule']]));
+            selectedCategory = names.includes('Combat') ? 'Combat' : names[0];
+          }
         } else {
-          Object.keys(modulesByCategory).forEach(key => delete modulesByCategory[key]);
-          Object.assign(modulesByCategory, JSON.parse(JSON.stringify(defaultModules)));
+          categoryData = structuredClone(exampleCategories);
           selectedCategory = 'Combat';
         }
-        openModule = (modulesByCategory[selectedCategory] || [])[0] || null;
+        // Match literal RGB constants when supplied; the project's main source uses these values.
+        const colors = [...source.matchAll(/new\s+Color\s*\(\s*(\d{1,3})\s*,\s*(\d{1,3})\s*,\s*(\d{1,3})\s*\)/g)].map(match => match.slice(1, 4).map(Number));
+        if (colors.length) {
+          const selected = colors.find(c => c[0] > 150 && c[2] > 100) || colors[0];
+          if (selected.every(value => value <= 255)) document.documentElement.style.setProperty('--unused-accent', `rgb(${selected.join(',')})`);
+        }
         render();
-        status.textContent = `${file.name} loaded — ${notes.length ? notes.join(', ') + '. ' : ''}Module names and settings are demo data unless included as standalone Category metadata. Java source is not executed.`;
+        status.textContent = `${file.name} loaded locally. Layout matches this repository's Clickgui.java; categories/modules/settings are runtime data and cannot be recovered from this file alone.`;
       };
       reader.readAsText(file);
     }
-    function saturation([r, g, b]) {
-      const max = Math.max(r, g, b), min = Math.min(r, g, b);
-      return max === 0 ? 0 : (max - min) / max;
-    }
-    const fileInput = document.getElementById('java-file');
-    const dropZone = document.getElementById('drop-zone');
-    fileInput.addEventListener('change', () => previewJava(fileInput.files[0]));
-    dropZone.addEventListener('dragover', event => { event.preventDefault(); dropZone.classList.add('is-over'); });
-    dropZone.addEventListener('dragleave', event => {
-      if (!dropZone.contains(event.relatedTarget)) dropZone.classList.remove('is-over');
-    });
-    dropZone.addEventListener('drop', event => {
-      event.preventDefault();
-      dropZone.classList.remove('is-over');
-      previewJava(event.dataTransfer.files[0]);
-    });
+    const input = document.getElementById('java-file');
+    input.addEventListener('change', () => loadJava(input.files[0]));
+    stage.addEventListener('dragover', event => { event.preventDefault(); });
+    stage.addEventListener('drop', event => { event.preventDefault(); loadJava(event.dataTransfer.files[0]); });
+    render();
 
-    const gui = document.getElementById('gui');
-    const dragbar = document.getElementById('dragbar');
-    let drag = null;
-    dragbar.addEventListener('pointerdown', event => {
-      drag = { x: event.clientX - gui.offsetLeft, y: event.clientY - gui.offsetTop };
-      dragbar.setPointerCapture(event.pointerId);
-    });
-    dragbar.addEventListener('pointermove', event => {
-      if (!drag || !dragbar.hasPointerCapture(event.pointerId)) return;
-      const stage = gui.parentElement;
-      const bounds = stage.getBoundingClientRect();
-      const maxX = Math.max(0, bounds.width - gui.offsetWidth);
-      const maxY = Math.max(0, bounds.height - gui.offsetHeight);
+    const bar = document.getElementById('dragbar');
+    bar.addEventListener('pointerdown', event => {
+      const box = gui.getBoundingClientRect();
+      const parent = stage.getBoundingClientRect();
       gui.style.position = 'absolute';
-      gui.style.left = `${Math.max(0, Math.min(maxX, event.clientX - bounds.left - drag.x))}px`;
-      gui.style.top = `${Math.max(10, Math.min(maxY, event.clientY - bounds.top - drag.y))}px`;
+      gui.style.margin = '0';
+      gui.style.left = `${box.left - parent.left}px`;
+      gui.style.top = `${box.top - parent.top}px`;
+      drag = { x: event.clientX - box.left, y: event.clientY - box.top };
+      bar.setPointerCapture(event.pointerId);
     });
-    dragbar.addEventListener('pointerup', () => { drag = null; });
-    dragbar.addEventListener('pointercancel', () => { drag = null; });
+    bar.addEventListener('pointermove', event => {
+      if (!drag || !bar.hasPointerCapture(event.pointerId)) return;
+      const bounds = stage.getBoundingClientRect();
+      gui.style.left = `${Math.max(0, Math.min(bounds.width - gui.offsetWidth, event.clientX - bounds.left - drag.x))}px`;
+      gui.style.top = `${Math.max(10, Math.min(bounds.height - gui.offsetHeight, event.clientY - bounds.top - drag.y))}px`;
+    });
+    bar.addEventListener('pointerup', () => { drag = null; });
+    bar.addEventListener('pointercancel', () => { drag = null; });
   </script>
 </body>
 </html>
